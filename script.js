@@ -1,6 +1,9 @@
+let gameStarted = false;
 let canvas = document.getElementById("meucanvas");
 let ctx = canvas.getContext("2d");
 let scoreDisplay = document.getElementById("score");
+
+let paused = false;
 
 // Imagens do Player, oponente e bola.
 let playerPaddleImg = new Image();
@@ -52,13 +55,27 @@ canvas.addEventListener("contextmenu", function(event) {
     event.preventDefault();
 });
 
+// Tecla P para pausar/despausar
+document.addEventListener("keydown", function(event) {
+    if (event.key === "p" || event.key === "P") {
+        paused = !paused;
+    } else if (event.key === " ") {
+        if (!gameStarted) {
+            startBall();
+        }
+    }
+});
+
+
 // Resetar a bola após o gol.
 function resetBall() {
     ball.x = canvas.width / 2;
     ball.y = canvas.height / 2;
-    ball.speedX = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
-    ball.speedY = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
+    ball.speedX = 0;
+    ball.speedY = 0;
+    gameStarted = false; 
 }
+
 
 // Atualização constante do jogo
 function update() {
@@ -77,48 +94,47 @@ function update() {
         resetBall();
     }
 
-    // Colisao da bola com as paredes
+    // Colisão com as paredes
     if (ball.x <= 0 || ball.x + ball.width >= canvas.width) {
         ball.speedX = -ball.speedX;
     }
 
-    // Colisao da bola com o player
+    // Colisão com jogador
     if (
         ball.y + ball.height >= player.y &&
         ball.x + ball.width >= player.x &&
         ball.x <= player.x + player.width
     ) {
-        const speedIncrement = 0.5;
         ball.speedY = -Math.abs(ball.speedY);
         ball.speedX += (ball.x - (player.x + player.width / 2)) * 0.1;
     }
+
+    // Colisão com IA
     if (
         ball.y <= ai.y + ai.height &&
         ball.x + ball.width >= ai.x &&
         ball.x <= ai.x + ai.width
     ) {
-        const speedIncrement = 0.5;
         ball.speedY = Math.abs(ball.speedY);
         ball.speedX += (ball.x - (ai.x + ai.width / 2)) * 0.1;
     }
 
-    // Movimentação do oponente
+    // Movimento da IA
     let targetX = ball.x - ai.width / 2;
-    ai.x += (targetX - ai.x) * 0.3; 
+    ai.x += (targetX - ai.x) * 0.3;
     ai.x = Math.max(0, Math.min(ai.x, canvas.width - ai.width));
-
-    // Placar
-    function updateScore() {
-        scoreDisplay.textContent = `Player: ${player.score} | AI: ${ai.score}`;
-    }
 }
 
-// Desenhar jogo
+// Atualiza o placar
+function updateScore() {
+    scoreDisplay.textContent = `Player: ${player.score} | AI: ${ai.score}`;
+}
+
+// Desenhar o jogo
 function draw() {
-    // Limpa o canva
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Meio de campo
+    // Linha do meio
     ctx.beginPath();
     ctx.setLineDash([5, 15]);
     ctx.moveTo(0, canvas.height / 2);
@@ -127,7 +143,7 @@ function draw() {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Jogador com brilho verde
+    // Jogador
     ctx.shadowColor = "green";
     ctx.shadowBlur = 20;
     if (playerPaddleImg.complete && playerPaddleImg.naturalWidth !== 0) {
@@ -138,7 +154,7 @@ function draw() {
     }
     ctx.shadowBlur = 0;
 
-    // Oponente com brilho rosa
+    // Oponente
     ctx.shadowColor = "pink";
     ctx.shadowBlur = 20;
     if (aiPaddleImg.complete && aiPaddleImg.naturalWidth !== 0) {
@@ -149,7 +165,7 @@ function draw() {
     }
     ctx.shadowBlur = 0;
 
-    // Bola redonda
+    // Bola
     ctx.shadowColor = "orange";
     ctx.shadowBlur = 20;
     if (ballImg.complete && ballImg.naturalWidth !== 0) {
@@ -160,13 +176,55 @@ function draw() {
         ctx.arc(ball.x + ball.width / 2, ball.y + ball.height / 2, ball.width / 2, 0, Math.PI * 2);
         ctx.fill();
     }
+    ctx.shadowBlur = 0;
+
+    // Se estiver pausado, mostrar texto
+    if (paused) {
+        ctx.fillStyle = "white";
+        ctx.font = "30px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("PAUSADO", canvas.width / 2, canvas.height / 2);
+    }
+
+    if (!gameStarted && !paused) {
+        ctx.fillStyle = "white";
+        ctx.font = "24px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("Pressione ESPAÇO para começar", canvas.width / 2, canvas.height / 2 + 40);
+    }
+    
 }
 
-// Loop do game pra funcionar
+// Loop do jogo
 function gameLoop() {
-    update();
+    if (!paused) {
+        update();
+    }
     draw();
 }
 
-// Rodar sem travar
+// Iniciar o jogo
+resetBall();
 setInterval(gameLoop, 1000 / 60);
+
+function restartGame() {
+    // Resetar placares
+    player.score = 0;
+    ai.score = 0;
+
+    // Resetar posições dos jogadores
+    player.x = 350;
+    ai.x = 350;
+
+    // Resetar bola
+    resetBall();
+
+    // Atualizar placar
+    updateScore();
+}
+
+function startBall() {
+    ball.speedX = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
+    ball.speedY = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
+    gameStarted = true;
+}
