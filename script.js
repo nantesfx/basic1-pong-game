@@ -103,8 +103,8 @@ function update() {
     }
 
     // Movimentação do oponente
-    let targetX = ball.x - ai.width / 2; // Target ball's center
-    ai.x += (targetX - ai.x) * 0.3; // Increased from 0.1 to 0.2 for more aggressive tracking
+    let targetX = ball.x - ai.width / 2;
+    ai.x += (targetX - ai.x) * 0.3; 
     ai.x = Math.max(0, Math.min(ai.x, canvas.width - ai.width));
 
     // Placar
@@ -147,7 +147,7 @@ function draw() {
         ctx.fillStyle = "white";
         ctx.fillRect(ai.x, ai.y, ai.width, ai.height);
     }
-    ctx.shadowBlur = 0; // Reset glow
+    ctx.shadowBlur = 0;
 
     // Bola redonda
     ctx.shadowColor = "orange";
