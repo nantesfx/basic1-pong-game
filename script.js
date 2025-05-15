@@ -88,6 +88,7 @@ function update() {
         ball.x + ball.width >= player.x &&
         ball.x <= player.x + player.width
     ) {
+        const speedIncrement = 0.5;
         ball.speedY = -Math.abs(ball.speedY);
         ball.speedX += (ball.x - (player.x + player.width / 2)) * 0.1;
     }
@@ -96,6 +97,7 @@ function update() {
         ball.x + ball.width >= ai.x &&
         ball.x <= ai.x + ai.width
     ) {
+        const speedIncrement = 0.5;
         ball.speedY = Math.abs(ball.speedY);
         ball.speedX += (ball.x - (ai.x + ai.width / 2)) * 0.1;
     }
